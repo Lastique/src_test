@@ -14,7 +14,7 @@ do
 		for file in $INPUT_FILES
 		do
 			out_file=`basename $file .wav`_to_${rate}.wav
-			time ./src_test $file $resampler $rate $resampler/$out_file
+			/usr/bin/time --format "real/user/sys:\t%e/%U/%S" ./src_test $file $resampler $rate $resampler/$out_file
 			echo ""
 		done
 	done
