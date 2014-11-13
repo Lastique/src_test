@@ -29,6 +29,8 @@ struct speex_resampler_base :
 	{
 		if (!m_state)
 			throw std::runtime_error("Failed to create speex resampler context");
+
+		speex_resampler_skip_zeros(m_state);
 	}
 
 	~speex_resampler_base()
@@ -168,8 +170,8 @@ inline void resampling_loop(SndfileHandle& in_file, SndfileHandle& out_file, res
 			if (total_produced == 0)
 			{
 				// This is the first produced output, calculate the resampler delay
-				std::size_t delay = total_consumed - (out_size * in_file.samplerate() / out_file.samplerate());
-				std::cout << "Resampler delay: " << delay << " samples (" << std::fixed << std::setprecision(3) << static_cast< float >(delay) * 1000.0f / in_file.samplerate() << " ms)" << std::endl;
+				float delay = total_consumed - (static_cast< float >(out_size) * in_file.samplerate() / out_file.samplerate());
+				std::cout << "Resampler delay: " << std::fixed << std::setprecision(3) << delay << " samples (" << static_cast< float >(delay) * 1000.0f / in_file.samplerate() << " ms)" << std::endl;
 			}
 
 			total_produced += out_size;
