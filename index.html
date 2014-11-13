@@ -285,7 +285,11 @@ During the test, each input file conversion was timed. All input and output file
 </p>
 <h2>Resampler delay</h2>
 <p>
-For each conversion and resampler preset the conversion delay was measured. The delay is expressed in the amount of input samples (per channel) that the resampler consumes before it produces the first output sample. For convenience, delay values expressed in milliseconds are also given. Note that speex resampler by default conceals the delay by producing silence samples in the beginning of the output. This behavior was disabled for this test.
+For each conversion and resampler preset the conversion delay was measured. The delay is expressed in the amount of input samples (per channel) that the resampler consumes before it produces the first output sample. For convenience, delay values expressed in milliseconds are also given. Note that speex resampler by default conceals the delay by producing silence samples in the beginning of the output. This behavior was disabled for this test. The test was performed twice, with different frame sizes (i.e. the amount of input samples that are passed to the resampler in one call).
+</p>
+
+<h3>Frame size: 20 samples per channel</h3>
+<p>
 	<table style="width:95%">
 		<tr>
 			<th>Test \ Resampler</th><th>speex-1</th><th>speex-5</th><th>speex-10</th><th>soxr-lq</th><th>soxr-mq</th><th>soxr-hq</th><th>soxr-vhq</th>
@@ -389,6 +393,114 @@ For each conversion and resampler preset the conversion delay was measured. The 
 			<td>184.000 samples (1.917 ms)</td>
 			<td>260.000 samples (2.708 ms)</td>
 			<td>404.000 samples (4.208 ms)</td>
+		</tr>
+	</table>
+</p>
+<h3>Frame size: 100 samples per channel</h3>
+<p>
+	<table style="width:95%">
+		<tr>
+			<th>Test \ Resampler</th><th>speex-1</th><th>speex-5</th><th>speex-10</th><th>soxr-lq</th><th>soxr-mq</th><th>soxr-hq</th><th>soxr-vhq</th>
+		</tr>
+		<tr>
+			<td>44.1 kHz, 16 bit, int -&gt; 48 kHz</td>
+			<td>7.350 samples (0.167 ms)</td>
+			<td>39.506 samples (0.896 ms)</td>
+			<td>127.707 samples (2.896 ms)</td>
+			<td>20.213 samples (0.458 ms)</td>
+			<td>122.194 samples (2.771 ms)</td>
+			<td>313.293 samples (7.104 ms)</td>
+			<td>674.363 samples (15.292 ms)</td>
+		</tr>
+		<tr>
+			<td>44.1 kHz, 32 bit, float -&gt; 48 kHz</td>
+			<td>7.350 samples (0.167 ms)</td>
+			<td>39.506 samples (0.896 ms)</td>
+			<td>127.707 samples (2.896 ms)</td>
+			<td>20.213 samples (0.458 ms)</td>
+			<td>122.194 samples (2.771 ms)</td>
+			<td>313.293 samples (7.104 ms)</td>
+			<td>674.363 samples (15.292 ms)</td>
+		</tr>
+		<tr>
+			<td>44.1 kHz, 16 bit, int -&gt; 96 kHz</td>
+			<td>7.810 samples (0.177 ms)</td>
+			<td>39.966 samples (0.906 ms)</td>
+			<td>127.707 samples (2.896 ms)</td>
+			<td>20.672 samples (0.469 ms)</td>
+			<td>122.653 samples (2.781 ms)</td>
+			<td>313.753 samples (7.115 ms)</td>
+			<td>674.822 samples (15.302 ms)</td>
+		</tr>
+		<tr>
+			<td>44.1 kHz, 32 bit, float -&gt; 96 kHz</td>
+			<td>7.810 samples (0.177 ms)</td>
+			<td>39.966 samples (0.906 ms)</td>
+			<td>127.707 samples (2.896 ms)</td>
+			<td>20.672 samples (0.469 ms)</td>
+			<td>122.653 samples (2.781 ms)</td>
+			<td>313.753 samples (7.115 ms)</td>
+			<td>674.822 samples (15.302 ms)</td>
+		</tr>
+		<tr>
+			<td>48 kHz, 16 bit, int -&gt; 44.1 kHz</td>
+			<td>11.973 samples (0.249 ms)</td>
+			<td>43.538 samples (0.907 ms)</td>
+			<td>139.320 samples (2.902 ms)</td>
+			<td>162.177 samples (3.379 ms)</td>
+			<td>592.109 samples (12.336 ms)</td>
+			<td>793.469 samples (16.531 ms)</td>
+			<td>1308.299 samples (27.256 ms)</td>
+		</tr>
+		<tr>
+			<td>48 kHz, 32 bit, float -&gt; 44.1 kHz</td>
+			<td>11.973 samples (0.249 ms)</td>
+			<td>43.538 samples (0.907 ms)</td>
+			<td>139.320 samples (2.902 ms)</td>
+			<td>162.177 samples (3.379 ms)</td>
+			<td>592.109 samples (12.336 ms)</td>
+			<td>793.469 samples (16.531 ms)</td>
+			<td>1308.299 samples (27.256 ms)</td>
+		</tr>
+		<tr>
+			<td>48 kHz, 16 bit, int -&gt; 96 kHz</td>
+			<td>8.000 samples (0.167 ms)</td>
+			<td>40.000 samples (0.833 ms)</td>
+			<td>128.000 samples (2.667 ms)</td>
+			<td>100.000 samples (2.083 ms)</td>
+			<td>460.000 samples (9.583 ms)</td>
+			<td>650.000 samples (13.542 ms)</td>
+			<td>252.000 samples (5.250 ms)</td>
+		</tr>
+		<tr>
+			<td>48 kHz, 32 bit, float -&gt; 96 kHz</td>
+			<td>8.000 samples (0.167 ms)</td>
+			<td>40.000 samples (0.833 ms)</td>
+			<td>128.000 samples (2.667 ms)</td>
+			<td>100.000 samples (2.083 ms)</td>
+			<td>460.000 samples (9.583 ms)</td>
+			<td>650.000 samples (13.542 ms)</td>
+			<td>252.000 samples (5.250 ms)</td>
+		</tr>
+		<tr>
+			<td>96 kHz, 32 bit, float -&gt; 44.1 kHz</td>
+			<td>19.592 samples (0.204 ms)</td>
+			<td>87.075 samples (0.907 ms)</td>
+			<td>278.640 samples (2.902 ms)</td>
+			<td>324.354 samples (3.379 ms)</td>
+			<td>1184.218 samples (12.336 ms)</td>
+			<td>1586.939 samples (16.531 ms)</td>
+			<td>2616.599 samples (27.256 ms)</td>
+		</tr>
+		<tr>
+			<td>96 kHz, 32 bit, float -&gt; 48 kHz</td>
+			<td>16.000 samples (0.167 ms)</td>
+			<td>80.000 samples (0.833 ms)</td>
+			<td>256.000 samples (2.667 ms)</td>
+			<td>200.000 samples (2.083 ms)</td>
+			<td>920.000 samples (9.583 ms)</td>
+			<td>1300.000 samples (13.542 ms)</td>
+			<td>504.000 samples (5.250 ms)</td>
 		</tr>
 	</table>
 </p>
