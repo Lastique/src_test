@@ -3,6 +3,7 @@
 #include <speex/speex_resampler.h>
 #include <cstddef>
 #include <cstring>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -11,8 +12,10 @@
 #include <memory>
 #include <utility>
 
-//! Audio frame duration, in ms
-const unsigned int frame_duration = 20;
+//! Minimum audio frame duration, in ms
+const std::size_t min_frame_duration = 20;
+//! Maximum audio frame duration, in ms. Set to min_frame_duration to make the frame size constant.
+const std::size_t max_frame_duration = 20;
 
 struct resampler_base
 {
@@ -95,7 +98,8 @@ struct soxr_resampler :
 		}
 
 		soxr_quality_spec_t quality = soxr_quality_spec(recipe, 0);
-		m_state	= soxr_create(in_rate, out_rate, in_channels, NULL, &io_spec, &quality, NULL);
+		soxr_runtime_spec_t runtime_spec = soxr_runtime_spec(1);
+		m_state = soxr_create(in_rate, out_rate, in_channels, NULL, &io_spec, &quality, &runtime_spec);
 
 		if (!m_state)
 			throw std::runtime_error("Failed to create soxr context");
@@ -165,13 +169,16 @@ inline void resampling_loop(SndfileHandle& in_file, SndfileHandle& out_file, res
 {
 	struct local
 	{
-		static void write_data(SndfileHandle& in_file, const SampleType* out_data, std::size_t out_size, std::size_t total_consumed, std::size_t& total_produced, SndfileHandle& out_file)
+		static void write_data(SndfileHandle& in_file, std::size_t in_size, const SampleType* out_data, std::size_t out_size, std::size_t total_consumed, std::size_t& total_produced, SndfileHandle& out_file)
 		{
-			if (total_produced == 0)
+			if (total_produced == 0 || min_frame_duration < max_frame_duration)
 			{
 				// This is the first produced output, calculate the resampler delay
-				float delay = total_consumed - (static_cast< float >(out_size) * in_file.samplerate() / out_file.samplerate());
-				std::cout << "Resampler delay: " << std::fixed << std::setprecision(3) << delay << " samples (" << static_cast< float >(delay) * 1000.0f / in_file.samplerate() << " ms)" << std::endl;
+				float delay = total_consumed - (static_cast< float >(total_produced + out_size) * in_file.samplerate() / out_file.samplerate());
+				float in_dur = static_cast< float >(in_size) * 1000.0f / in_file.samplerate();
+				float out_dur = static_cast< float >(out_size) * 1000.0f / out_file.samplerate();
+				std::cout << "Resampler delay: " << std::fixed << std::setprecision(3) << delay << " samples (" << static_cast< float >(delay) * 1000.0f / in_file.samplerate() << " ms)"
+						  << ", input chunk: " << in_size << " samples (" << in_dur << " ms), output chunk: " << out_size << " samples (" << out_dur << " ms), " << out_dur - in_dur << " ms difference" << std::endl;
 			}
 
 			total_produced += out_size;
@@ -181,8 +188,8 @@ inline void resampling_loop(SndfileHandle& in_file, SndfileHandle& out_file, res
 		}
 	};
 
-	std::size_t in_frame_size = (in_file.samplerate() * frame_duration + 999u) / 1000u;
-	std::size_t out_frame_size = (out_file.samplerate() * frame_duration + 999u) / 1000u;
+	std::size_t in_frame_size = (in_file.samplerate() * max_frame_duration + 999u) / 1000u;
+	std::size_t out_frame_size = (out_file.samplerate() * max_frame_duration + 999u) / 1000u;
 
 	const std::size_t channel_count = in_file.channels();
 	std::unique_ptr< SampleType[] > in_data(new SampleType[in_frame_size * channel_count]);
@@ -192,7 +199,13 @@ inline void resampling_loop(SndfileHandle& in_file, SndfileHandle& out_file, res
 	std::size_t in_count = in_file.frames();
 	while (total_consumed < in_count)
 	{
-		const std::size_t packs_to_read = std::min(in_frame_size - in_size, in_count - total_consumed);
+		std::size_t runtime_in_frame_size = in_frame_size - in_size;
+		if (min_frame_duration < max_frame_duration)
+		{
+			std::size_t rnd_frame_duration = (max_frame_duration - min_frame_duration) * std::rand() / RAND_MAX + min_frame_duration;
+			runtime_in_frame_size = std::min(runtime_in_frame_size, (in_file.samplerate() * rnd_frame_duration + 999u) / 1000u);
+		}
+		const std::size_t packs_to_read = std::min(runtime_in_frame_size, in_count - total_consumed);
 		sf_count_t read_count = (in_file.*ReadF)(in_data.get() + in_size, packs_to_read);
 		if (read_count != packs_to_read)
 			throw std::runtime_error("Failed to read samples from the input file");
@@ -206,7 +219,7 @@ inline void resampling_loop(SndfileHandle& in_file, SndfileHandle& out_file, res
 		std::memmove(in_data.get(), in_data.get() + consumed * channel_count, in_size * channel_count * sizeof(SampleType));
 
 		if (produced > 0)
-			local::write_data(in_file, out_data.get(), produced, total_consumed, total_produced, out_file);
+			local::write_data(in_file, read_count, out_data.get(), produced, total_consumed, total_produced, out_file);
 	}
 
 	// Flush the resampler
@@ -216,7 +229,7 @@ inline void resampling_loop(SndfileHandle& in_file, SndfileHandle& out_file, res
 		resampler.process(NULL, 0, consumed, out_data.get(), out_frame_size, produced);
 
 		if (produced > 0)
-			local::write_data(in_file, out_data.get(), produced, total_consumed, total_produced, out_file);
+			local::write_data(in_file, 0, out_data.get(), produced, total_consumed, total_produced, out_file);
 		else
 			break;
 	}
