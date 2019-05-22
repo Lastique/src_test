@@ -13,8 +13,9 @@ do
 	do
 		for file in $INPUT_FILES
 		do
-			out_file=`basename $file .wav`_to_${rate}.wav
-			/usr/bin/time --format "real/user/sys:\t%e/%U/%S" ./src_test $file $resampler $rate $resampler/$out_file
+			out_file=`basename $file .wav`_to_${rate}
+			/usr/bin/time --format "real/user/sys:\t%e/%U/%S" ./src_test $file $resampler $rate $resampler/$out_file.wav
+			/usr/bin/sox $out_file.wav -n spectrogram -o $out_file.png
 			echo ""
 		done
 	done
