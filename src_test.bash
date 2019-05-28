@@ -10,11 +10,10 @@ for RESAMPLER in ${RESAMPLERS[@]}; do
 	for OUT_RATE in ${OUTPUT_RATES[@]}; do
 		for IN_FILE in ${INPUT_FILES[@]}; do
 
-			OUT_FILE="$(basename $IN_FILE .wav)_to_$OUT_RATE"
-			/usr/bin/env time --format "real/user/sys:\t%e/%U/%S" ./src_test "$IN_FILE" "$RESAMPLER" "$OUT_RATE" "$RESAMPLER/$OUT_FILE.wav"
-			[[ $(which sox) = *:* ]] && sox "$OUTFILE.wav" -n spectrogram -o "$OUTFILE.png"
+			OUT_FILE="$RESAMPLER/$(basename $IN_FILE .wav)_to_$OUT_RATE"
+			/usr/bin/env time --format "real/user/sys:\t%e/%U/%S" ./src_test "$IN_FILE" "$RESAMPLER" "$OUT_RATE" "$OUT_FILE.wav"
+			[[ -f /usr/bin/sox ]] && sox "$OUT_FILE.wav" -n spectrogram -o "$OUT_FILE.png"
 			echo
 		done
 	done
 done
-
